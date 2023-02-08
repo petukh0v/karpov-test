@@ -278,19 +278,58 @@ const data = {
 const mainNews = data.items.slice(0, 3);
 const smallNews = data.items.slice(3, 12);
 
-const mainNewsTemplate = document.getElementById('main-news-item');
-const smallNewsTemplate = document.getElementById('small-article-item');
 const mainNewsContainer = document.querySelector('.articles__big-column');
 const smallNewsContainer = document.querySelector('.articles__small-column');
 
+const escapeString = (string) => {
+  const symbols = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+  };
+  return string.replace(/[&<>]/g, (tag) => {
+    return symbols[tag] || tag;
+  });
+}
+
+// Main news blocks
 mainNews.forEach(item => {
-    const element = mainNewsTemplate.content.cloneNode(true);
-    element.querySelector('.main-article__title').textContent = item.title;
-    element.querySelector('.main-article__text').textContent = item.description;
-    mainNewsContainer.appendChild(element);
+  const template = document.createElement('template');
+  const newsCat = data.categories.find(categoryItem => categoryItem.id === item.category_id ).name;
+  const newsSrc = data.sources.find(sourceItem => sourceItem.id === item.source_id ).name;
+
+  template.innerHTML = `
+    <article class="main-article">
+				<div class="main-article__image-container">
+					<img class="main-article__image" src="${ encodeURI(item.image) }" alt="Фото новости" />
+				</div>
+				<div class="main-article__content">
+					<span class="article-category main-article__category">${ escapeString(newsCat) }</span>
+					<h2 class="main-article__title">${ escapeString(item.title) }</h2>
+					<p class="main-article__text">${ escapeString(item.description) }</p>
+					<span class="article-source main-article__source">${ escapeString(newsSrc) }</span>
+				</div>
+			</article>
+  `;
+
+    mainNewsContainer.appendChild(template.content);
 });
 
-smallNews.forEach(item => {
-    const element = smallNewsTemplate.content.cloneNode(true);
-    smallNewsContainer.appendChild(element);
+// Small news blocks
+mainNews.forEach(item => {
+  const template = document.createElement('template');
+  const smallNewsSrc = data.sources.find(sourceItem => sourceItem.id === item.source_id ).name;
+  const newsDate = new Date(item.date).toLocaleDateString('ru-RU', { month: 'long', day: 'numeric' });
+
+  template.innerHTML = `
+    <article class="small-article">
+				<h2 class="small-article__title">${ escapeString(item.title) }</h2>
+				<p class="small-article__caption">
+					<span class="article-date small-article__date">${ escapeString(newsDate) }</span>
+					<span class="article-source small-article__source">${ escapeString(smallNewsSrc) }</span>
+				</p>
+			</article>
+  `;
+
+    smallNewsContainer.appendChild(template.content);
 });
